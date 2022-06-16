@@ -1,0 +1,66 @@
+#include <iostream>
+typedef std::string labeltype;
+const int max_childs = 100;
+void INORDER(node* n) {
+	if (n->childs[0] == nullptr/*n – листок*/)std::cout << LABEL(n);
+	else {
+		INORDER(LEFTMOST_CHILD(n));
+		std::cout << LABEL(n);
+		node* c = RIGHT_SIBLING(LEFTMOST_CHILD(n));
+		while (c != nullptr) {
+			INORDER(c);
+			c = RIGHT_SIBLING(c);
+		}
+	}
+}
+int main()
+{
+	TREE T(new node("+"));//n1
+	node* n2 = ADD_CHILD(ROOT(T), "sin()");//n2
+	node* n3 = ADD_CHILD(ROOT(T), "cos()");//n3
+	node* n4 = ADD_CHILD(n2, "*");//n4
+	node* n5 = ADD_CHILD(n3, "-");//n5
+	ADD_CHILD(n4, "2");//n6
+	ADD_CHILD(n4, "a");//n7
+	ADD_CHILD(n5, "b");//n8
+	ADD_CHILD(n5, "a");//n9
+	INORDER(ROOT(T));
+}
+
+struct node {
+	node(labeltype label, node* parent = nullptr) :label(label), parent(parent), amount_of_childs(0) {
+		for (int i = 0; i < max_childs; i++)
+			childs[i] = nullptr;
+	}
+	labeltype label;
+	node* parent; node* childs[max_childs];
+	int amount_of_childs;
+	~node() {
+		for (int i = 0; i < amount_of_childs; i++)
+		{
+			delete childs[i];
+		}
+	}
+};
+struct TREE {
+	TREE(node* root) : root(root) {}
+	node* root;
+	~TREE() { if (root != nullptr)delete root; }
+};
+node* ADD_CHILD(node* parent, labeltype label) {
+	node* new_node;
+	new_node = parent->childs[parent->amount_of_childs] = new node(label, parent);
+	parent->amount_of_childs++;
+	return new_node;
+}
+node* PARENT(node* n) { return n->parent; }
+node* LEFTMOST_CHILD(node* n) { return n->childs[0]; }
+node* RIGHT_SIBLING(node* n) {
+	node* temp = LEFTMOST_CHILD(PARENT(n));
+	int i = 1;
+	for (; temp != n; i++)
+		temp = PARENT(n)->childs[i];
+	return PARENT(n)->childs[i];
+}
+labeltype LABEL(node* n) { return n->label; }
+node* ROOT(TREE& T) { return T.root; }
